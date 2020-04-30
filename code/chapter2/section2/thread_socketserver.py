@@ -1,6 +1,14 @@
 # -*- coding:utf-8 -*-
 ###
 # Author: Li Junjie
+# Date: 2020-04-29 20:40:17
+# LastEditors: Li Junjie
+# LastEditTime: 2020-04-29 20:43:54
+# FilePath: \django_enterprise_development_combat\code\chapter2\section2\thread_socketserver.py
+###
+# -*- coding:utf-8 -*-
+###
+# Author: Li Junjie
 # Date: 2020-04-29 18:57:56
 # LastEditors: Li Junjie
 # LastEditTime: 2020-04-29 18:58:09
@@ -35,7 +43,7 @@ def handle_connection(conn, addr):
         try:
             request += conn.recv(1024)
         except:
-            continue
+            time.sleep(0.1)
 
     print(request)
     current_thread = threading.currentThread()
@@ -52,19 +60,21 @@ def main():
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # 设置端口可复用，保证每次 Ctrl+C 后可快速重启
     serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    serversocket.bind(('127.0.0.1', 8000))
+    serversocket.setblocking(False)  # 设置为非阻塞，需要在 bind 和 listen 之前
+    serversocket.bind(('0.0.0.0', 8000))
     serversocket.listen(10)  # 设置 backlog--socket 连接最大排队数量
-    print('http://127.0.0.1:8000')
-    serversocket.setblocking(False)
+    print('http://0.0.0.0:8000')
 
     try:
         i = 0
         while True:
             try:
                 conn, address = serversocket.accept()
-            except socket.error as e:
-                if e.args[0] != errno.EAGAIN:
-                    raise
+            # except socket.error as e:
+            #     if e.args[0] != errno.EAGAIN:
+            #         raise
+            #     continue
+            except BlockingIOError:
                 continue
             i += 1
             print(i)
